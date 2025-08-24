@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from app.api.v1.models import (
     CreateItemRequest,
     CreateItemResponse,
-    AiRequest,
-    AiResponse
+    AIRequest,
+    AIResponse
 )
 from app.ai.services import ChatService
 import logging
@@ -18,11 +18,11 @@ logger.setLevel(app_config.logging.level)
 router = APIRouter()
 
 @router.get("/")
-def root():
+async def root():
     return {"message": "Hello, World!"}
 
 @router.post("/items", response_model=CreateItemResponse)
-def create_item(item: CreateItemRequest):
+async def create_item(item: CreateItemRequest):
     logger.info(f"Creating item: {item}")
 
     # TODO: Create item in database
@@ -32,20 +32,20 @@ def create_item(item: CreateItemRequest):
 
     return CreateItemResponse(id=1, name="Item 1", type="Item 1")
 
-@router.post("/ai", response_model=AiResponse)
-def ai(request: AiRequest):
+@router.post("/ai", response_model=AIResponse)
+async def ai(request: AIRequest):
     logger.info(f"AI request: {request}")
     # TO-DO: Add other clients
     if request.aiprovider == AIProvider.GEMINI:
         chat = ChatService(GeminiClient(app_config.gemini))
-        response, history = chat.chat(request.prompt, request.history)
+        response, history = await chat.chat(request.prompt, request.history)
     else:
         raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
 
-    return AiResponse(response=response, history=history)
+    return AIResponse(response=response, history=history)
 
 
 
-@router.get("/ai/providers")
-def get_ai_providers():
+@router.get("/ai/providers", response_model=list[str])
+async def get_ai_providers():
     return AIProvider.get_all_providers()

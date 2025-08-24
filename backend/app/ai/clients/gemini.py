@@ -3,19 +3,21 @@ from typing import List, Dict, Optional
 import logging
 from app.config import app_config
 from app.ai.clients.base import AIClient
+from app.config import GeminiConfig
+import asyncio
 
 logger = logging.getLogger(__name__)
 logger.setLevel(app_config.logging.level)
 
 
 class GeminiClient(AIClient):
-    def __init__(self, gemini_config):
+    def __init__(self, gemini_config: GeminiConfig):
         logger.info(f"Initializing Gemini client with model: {gemini_config.model}")
 
         if not gemini_config.api_key or len(gemini_config.api_key) == 0:
             raise ValueError("API key is required")
-        if not gemini_config.model or not gemini_config.model.startswith("gemini-"):
-            raise ValueError("Model is required and must start with 'gemini-'")
+        if not gemini_config.model:
+            raise ValueError("Model is required")
 
         try:
             self.client = genai.Client(api_key=gemini_config.api_key)
@@ -23,33 +25,27 @@ class GeminiClient(AIClient):
         except Exception as e:
             logger.error(f"Error initializing Gemini client: {e}")
             raise e
-    
-    def generate_text(self, prompt: str, history: Optional[List[Dict]] = None) -> str:
-        def single_contents_dict(role: str, text: str) -> Dict:
-            return {
-                "role": role,
-                "parts": [
-                    {"text": text}
-                ]
-            }
-            
+
+    async def generate_text(self, prompt: str, history: Optional[List[Dict]] = None) -> tuple[str, list[dict]]:
         if len(prompt) == 0:
             raise ValueError("Prompt cannot be empty")
         
         logger.info(f"Generating text with model: {self.model}")
-        logger.info(f"Prompt: {prompt}")
-        logger.info(f"History: {history}")
+        logger.debug(f"Prompt: {prompt}")
+        logger.debug(f"History: {history}")
 
         contents = []
         if history:
-            contents = history + [single_contents_dict("user", prompt)]
+            contents = history + [self._single_contents_dict("user", prompt)]
         else:
-            contents = [single_contents_dict("user", prompt)]
+            contents = [self._single_contents_dict("user", prompt)]
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=contents
+            logger.debug(f"Calling Gemini API with contents: {contents}")
+            response = await asyncio.get_running_loop().run_in_executor(
+                None, # TO-DO: Possibly wanna custom executor with threadpool
+                self._call_gemini_api, 
+                contents
             )
         except Exception as e:
             logger.error(f"Error generating text for model {self.model}: {e}")
@@ -65,7 +61,19 @@ class GeminiClient(AIClient):
         if not hasattr(response, 'text'):
             raise ValueError(f"Invalid response format: missing 'text' attribute. Response: {response}")
 
-        history = contents + [single_contents_dict("model", response.text)]
+        history = contents + [self._single_contents_dict("model", response.text)]
         return response.text, history
-        
+
+    def _call_gemini_api(self, contents: List[Dict]):
+        return self.client.models.generate_content(
+            model=self.model,
+            contents=contents
+        )
     
+    def _single_contents_dict(self, role: str, text: str) -> Dict:
+        return {
+            "role": role,
+            "parts": [
+                {"text": text}
+            ]
+        }

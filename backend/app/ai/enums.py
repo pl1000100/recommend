@@ -6,3 +6,4 @@ class AIProvider(str, Enum):
     @classmethod
     def get_all_providers(cls) -> list[str]:
         return [provider.value for provider in cls]
+        

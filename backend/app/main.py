@@ -2,9 +2,11 @@ from fastapi import FastAPI
 import uvicorn
 from .api.v1.router import router as router_v1
 import logging
+from app.config import app_config
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 logger = logging.getLogger(__name__)
+logger.setLevel(app_config.logging.level)
 
 app = FastAPI()
 
@@ -13,7 +15,7 @@ logger.info("Starting server")
 app.include_router(router_v1, prefix="/api/v1", tags=["v1"])
 
 @app.get("/health")
-def health():
+async def health():
     logger.info("Health endpoint called")
     return {"status": "healthy"}
 

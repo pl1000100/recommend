@@ -1,2 +1,2 @@
 from .items import CreateItemRequest, CreateItemResponse
-from .ai import AiRequest, AiResponse
+from .ai import AIRequest, AIResponse

@@ -19,17 +19,22 @@ class GeminiClient(AIClient):
         if not gemini_config.model:
             raise ValueError("Model is required")
 
+        # TO-DO: Add rate limiting
+
         try:
             self.client = genai.Client(api_key=gemini_config.api_key)
             self.model = gemini_config.model
+            self.max_prompt_length = gemini_config.max_prompt_length
         except Exception as e:
             logger.error(f"Error initializing Gemini client: {e}")
             raise e
 
     async def generate_text(self, prompt: str, history: Optional[List[Dict]] = None) -> tuple[str, list[dict]]:
-        if len(prompt) == 0:
-            raise ValueError("Prompt cannot be empty")
-        
+        if not prompt or not prompt.strip():
+            raise ValueError("Prompt cannot be empty or whitespace-only")
+        if len(prompt) > self.max_prompt_length:
+            raise ValueError(f"Prompt cannot be longer than {self.max_prompt_length} characters")
+
         logger.info(f"Generating text with model: {self.model}")
         logger.debug(f"Prompt: {prompt}")
         logger.debug(f"History: {history}")

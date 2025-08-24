@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.api.v1.models import (
     CreateItemRequest,
     CreateItemResponse,
@@ -35,16 +35,22 @@ async def create_item(item: CreateItemRequest):
 @router.post("/ai", response_model=AIResponse)
 async def ai(request: AIRequest):
     logger.info(f"AI request: {request}")
-    # TO-DO: Add other clients
-    if request.aiprovider == AIProvider.GEMINI:
-        chat = ChatService(GeminiClient(app_config.gemini))
-        response, history = await chat.chat(request.prompt, request.history)
-    else:
-        raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
+    try:
+        # TO-DO: Add other clients
+        if request.aiprovider == AIProvider.GEMINI:
+            chat = ChatService(GeminiClient(app_config.gemini))
+            response, history = await chat.chat(request.prompt, request.history)
+        else:
+            raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
+
+    except ValueError as e:
+        logger.error(f"AI request failed: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in AI request: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return AIResponse(response=response, history=history)
-
-
 
 @router.get("/ai/providers", response_model=list[str])
 async def get_ai_providers():

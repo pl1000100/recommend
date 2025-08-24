@@ -18,6 +18,7 @@ class LoggingConfig(BaseSettings):
 class GeminiConfig(BaseSettings):
     api_key: str = Field(default="")
     model: str = Field(default="gemini-2.0-flash")
+    max_prompt_length: int = Field(default=10000)
     
     model_config = {
         "env_prefix": "GEMINI_",

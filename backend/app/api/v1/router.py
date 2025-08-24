@@ -5,10 +5,10 @@ from app.api.v1.models import (
     AiRequest,
     AiResponse
 )
-from app.ai.services.chat import ChatService
+from app.ai.services import ChatService
 import logging
 from app.config import app_config
-from app.ai.clients.gemini import GeminiClient
+from app.ai.clients import GeminiClient
 from app.ai.enums import AIProvider
 
 
@@ -38,11 +38,13 @@ def ai(request: AiRequest):
     # TO-DO: Add other clients
     if request.aiprovider == AIProvider.GEMINI:
         chat = ChatService(GeminiClient(app_config.gemini))
-        response = chat.chat(request.prompt)
+        response, history = chat.chat(request.prompt, request.history)
     else:
         raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
 
-    return AiResponse(response=response)
+    return AiResponse(response=response, history=history)
+
+
 
 @router.get("/ai/providers")
 def get_ai_providers():

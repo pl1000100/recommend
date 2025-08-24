@@ -1,8 +1,19 @@
 from fastapi import APIRouter
-from app.api.v1.models import CreateItemRequest, CreateItemResponse
+from app.api.v1.models import (
+    CreateItemRequest,
+    CreateItemResponse,
+    AiRequest,
+    AiResponse
+)
+from app.ai.services.chat import ChatService
 import logging
+from app.config import app_config
+from app.ai.clients.gemini import GeminiClient
+from app.ai.enums import AIProvider
+
 
 logger = logging.getLogger(__name__)
+logger.setLevel(app_config.logging.level)
 
 router = APIRouter()
 
@@ -20,3 +31,19 @@ def create_item(item: CreateItemRequest):
     logger.critical(f"Not implemented: Create item in database")
 
     return CreateItemResponse(id=1, name="Item 1", type="Item 1")
+
+@router.post("/ai", response_model=AiResponse)
+def ai(request: AiRequest):
+    logger.info(f"AI request: {request}")
+    # TO-DO: Add other clients
+    if request.aiprovider == AIProvider.GEMINI:
+        chat = ChatService(GeminiClient(app_config.gemini))
+        response = chat.chat(request.prompt)
+    else:
+        raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
+
+    return AiResponse(response=response)
+
+@router.get("/ai/providers")
+def get_ai_providers():
+    return AIProvider.get_all_providers()

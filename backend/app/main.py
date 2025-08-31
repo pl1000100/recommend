@@ -27,6 +27,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(router_v1, prefix="/api/v1", tags=["v1"])
 
 
+# TO-DO: Add response handlers for response codes 500 400 etc. to be visable in docs
 @app.get("/health")
 @limiter.limit(app_config.rate_limit.slowapi_default)
 async def health(request: Request):

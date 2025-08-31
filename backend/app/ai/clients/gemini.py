@@ -18,12 +18,11 @@ class GeminiClient(AIClient):
         if not gemini_config.model:
             raise ValueError("Model is required")
 
-        # TO-DO: Add rate limiting
-
         try:
             self.client = genai.Client(api_key=gemini_config.api_key)
             self.model = gemini_config.model
             self.max_prompt_length = gemini_config.max_prompt_length
+            self.max_history_length = gemini_config.max_history_length
         except Exception as e:
             logger.error(f"Error initializing Gemini client: {e}")
             raise e
@@ -31,12 +30,7 @@ class GeminiClient(AIClient):
     async def generate_text(
         self, prompt: str, history: Optional[List[Dict]] = None
     ) -> tuple[str, list[dict]]:
-        if not prompt or not prompt.strip():
-            raise ValueError("Prompt cannot be empty or whitespace-only")
-        if len(prompt) > self.max_prompt_length:
-            raise ValueError(
-                f"Prompt cannot be longer than {self.max_prompt_length} characters"
-            )
+        self._validate(prompt, history)
 
         logger.info(f"Generating text with model: {self.model}")
         logger.debug(f"Prompt: {prompt}")
@@ -51,7 +45,7 @@ class GeminiClient(AIClient):
         try:
             logger.debug(f"Calling Gemini API with contents: {contents}")
             response = await asyncio.get_running_loop().run_in_executor(
-                None,  # TO-DO: Possibly wanna custom executor with otherthreadpool
+                None,
                 self._call_gemini_api,
                 contents,
             )
@@ -81,3 +75,16 @@ class GeminiClient(AIClient):
 
     def _single_contents_dict(self, role: str, text: str) -> Dict:
         return {"role": role, "parts": [{"text": text}]}
+
+    def _validate(self, prompt: str, history: Optional[List[Dict]] = None):
+        if not prompt or not prompt.strip():
+            raise ValueError("Prompt cannot be empty or whitespace-only")
+        if len(prompt) > self.max_prompt_length:
+            raise ValueError(
+                f"Prompt cannot be longer than {self.max_prompt_length} characters"
+            )
+        if history:
+            if len(history) > self.max_history_length:
+                raise ValueError(
+                    f"History cannot be longer than {self.max_history_length} items"
+                )

@@ -1,4 +1,4 @@
-.PHONY: install-dev switch-dev dev lint fix
+.PHONY: install-dev switch-dev dev fix
 
 install-dev:
 	poetry install
@@ -9,10 +9,7 @@ switch-dev:
 dev:
 	poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-lint:
-	poetry run flake8 app
-
 fix:
 	poetry run black app
-	make lint
+	poetry run flake8 app
 

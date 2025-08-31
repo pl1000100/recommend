@@ -20,6 +20,7 @@ class GeminiConfig(BaseSettings):
     api_key: str = Field(default="")
     model: str = Field(default="gemini-2.0-flash")
     max_prompt_length: int = Field(default=10000)
+    max_history_length: int = Field(default=20)
 
     model_config = {"env_prefix": "GEMINI_", "env_file": ".env", "extra": "ignore"}
 

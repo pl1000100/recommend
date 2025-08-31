@@ -3,7 +3,7 @@ from app.api.v1.models import (
     CreateItemRequest,
     CreateItemResponse,
     AIRequest,
-    AIResponse
+    AIResponse,
 )
 from app.ai.services import ChatService
 import logging
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.post("/items", response_model=CreateItemResponse)
 @limiter.limit(app_config.rate_limit.slowapi_default)
 async def create_item(request: Request, item: CreateItemRequest):
@@ -29,6 +30,7 @@ async def create_item(request: Request, item: CreateItemRequest):
     raise NotImplementedError("Not implemented")
 
     return CreateItemResponse(id=1, name="Item 1", type="Item 1")
+
 
 @router.post("/ai", response_model=AIResponse)
 @limiter.limit(app_config.rate_limit.slowapi_ai)
@@ -51,6 +53,7 @@ async def ai(request: Request, body: AIRequest):
         raise HTTPException(status_code=500, detail="Internal server error")
 
     return AIResponse(response=response, history=history)
+
 
 @router.get("/ai/providers", response_model=list[str])
 @limiter.limit(app_config.rate_limit.slowapi_default)

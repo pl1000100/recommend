@@ -16,6 +16,7 @@ class AIRequest(BaseModel):
                         raise ValueError("Invalid history item")
         return v
 
+
 class AIResponse(BaseModel):
     response: str
     history: list[dict]

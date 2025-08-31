@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from app.api.v1.models import (
     CreateItemRequest,
     CreateItemResponse,
@@ -10,38 +10,38 @@ import logging
 from app.config import app_config
 from app.ai.clients import GeminiClient
 from app.ai.enums import AIProvider
+from app.core import limiter
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(app_config.logging.level)
 
 router = APIRouter()
 
-@router.get("/")
-async def root():
-    return {"message": "Hello, World!"}
-
 @router.post("/items", response_model=CreateItemResponse)
-async def create_item(item: CreateItemRequest):
-    logger.info(f"Creating item: {item}")
+@limiter.limit(app_config.rate_limit.slowapi_default)
+async def create_item(request: Request, item: CreateItemRequest):
+    logger.info(f"Creating item: {item.name}")
+    logger.debug(f"Item: {item}")
 
     # TODO: Create item in database
     # TODO: Return item id
 
-    logger.critical(f"Not implemented: Create item in database")
+    raise NotImplementedError("Not implemented")
 
     return CreateItemResponse(id=1, name="Item 1", type="Item 1")
 
 @router.post("/ai", response_model=AIResponse)
-async def ai(request: AIRequest):
-    logger.info(f"AI request: {request}")
+@limiter.limit(app_config.rate_limit.slowapi_ai)
+async def ai(request: Request, body: AIRequest):
+    logger.info(f"AI request to {body.aiprovider}")
+    logger.debug(f"AI request: {body}")
     try:
         # TO-DO: Add other clients
-        if request.aiprovider == AIProvider.GEMINI:
+        if body.aiprovider == AIProvider.GEMINI:
             chat = ChatService(GeminiClient(app_config.gemini))
-            response, history = await chat.chat(request.prompt, request.history)
+            response, history = await chat.chat(body.prompt, body.history)
         else:
-            raise ValueError(f"Unsupported AI provider: {request.aiprovider}")
+            raise ValueError(f"Unsupported AI provider: {body.aiprovider}")
 
     except ValueError as e:
         logger.error(f"AI request failed: {e}")
@@ -53,5 +53,7 @@ async def ai(request: AIRequest):
     return AIResponse(response=response, history=history)
 
 @router.get("/ai/providers", response_model=list[str])
-async def get_ai_providers():
+@limiter.limit(app_config.rate_limit.slowapi_default)
+async def get_ai_providers(request: Request):
+    logger.info("Getting AI providers")
     return AIProvider.get_all_providers()

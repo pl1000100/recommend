@@ -1,13 +1,12 @@
 from google import genai
 from typing import List, Dict, Optional
 import logging
-from app.config import app_config
 from app.ai.clients.base import AIClient
 from app.config import GeminiConfig
 import asyncio
 
+
 logger = logging.getLogger(__name__)
-logger.setLevel(app_config.logging.level)
 
 
 class GeminiClient(AIClient):
@@ -48,7 +47,7 @@ class GeminiClient(AIClient):
         try:
             logger.debug(f"Calling Gemini API with contents: {contents}")
             response = await asyncio.get_running_loop().run_in_executor(
-                None, # TO-DO: Possibly wanna custom executor with threadpool
+                None, # TO-DO: Possibly wanna custom executor with otherthreadpool
                 self._call_gemini_api, 
                 contents
             )

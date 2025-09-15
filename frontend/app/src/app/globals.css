@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --sidebar-bg: #f8f9fa;
+  --ai-sidebar-bg: #f1f3f4;
+  --border: #e5e7eb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --sidebar-bg: #1a1a1a;
+    --ai-sidebar-bg: #2a2a2a;
+    --border: #374151;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Layout utilities */
+.layout-container {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 
+    "header header header"
+    "sidebar main ai-sidebar";
+  min-height: 100vh;
+}
+
+.layout-header {
+  grid-area: header;
+}
+
+.layout-sidebar {
+  grid-area: sidebar;
+}
+
+.layout-main {
+  grid-area: main;
+}
+
+.layout-ai-sidebar {
+  grid-area: ai-sidebar;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .layout-container {
+    grid-template-columns: 200px 1fr 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-container {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "header"
+      "main";
+  }
+  
+  .layout-sidebar,
+  .layout-ai-sidebar {
+    display: none;
+  }
+}

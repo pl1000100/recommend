@@ -1,5 +1,4 @@
 import Sidebar from "./sidebar";
-import AISidebar from "./aisidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,10 +24,6 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      {/* Right AI Sidebar */}
-      <aside className="layout-ai-sidebar">
-        <AISidebar />
-      </aside>
     </div>
   );
 }

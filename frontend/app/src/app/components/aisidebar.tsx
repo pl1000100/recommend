@@ -16,7 +16,7 @@ export default function AISidebar() {
   };
 
   return (
-    <div className="bg-ai-sidebar-bg border-l border-border p-4">
+    <div className="bg-ai-sidebar-bg border-l border-border p-4 w-80 flex-shrink-0">
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">
           AI Assistant

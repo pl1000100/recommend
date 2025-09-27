@@ -4,6 +4,8 @@ from app.api.v1.models import (
     CreateItemResponse,
     AIRequest,
     AIResponse,
+    AIOutfitRequest,
+    AIOutfitResponse,
 )
 from app.ai.services import ChatService
 import logging
@@ -54,6 +56,28 @@ async def ai(request: Request, body: AIRequest):
 
     return AIResponse(response=response, history=history)
 
+@router.post("/ai/outfit", response_model=AIOutfitResponse)
+@limiter.limit(app_config.rate_limit.slowapi_ai)
+async def ai_outfit(request: Request, body: AIOutfitRequest):
+    logger.info(f"AI request to {body.aiprovider}")
+    logger.debug(f"AI request: {body}")
+    try:
+        # TO-DO: Add other clients
+        prompt = f"Generate an outfit from the following items: {body.selectedItems}. Additional instructions: {body.additionalInstructions}"
+        if body.aiprovider == AIProvider.GEMINI:
+            chat = ChatService(GeminiClient(app_config.gemini))
+            response, history = await chat.chat(prompt, None)
+        else:
+            raise ValueError(f"Unsupported AI provider: {body.aiprovider}")
+
+    except ValueError as e:
+        logger.error(f"AI request failed: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in AI request: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    return AIOutfitResponse(response=response, history=history)
 
 @router.get("/ai/providers", response_model=list[str])
 @limiter.limit(app_config.rate_limit.slowapi_default)

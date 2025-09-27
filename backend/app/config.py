@@ -26,10 +26,20 @@ class GeminiConfig(BaseSettings):
 
 
 class RateLimitConfig(BaseSettings):
-    slowapi_default: str = Field(default="5/minute")
-    slowapi_ai: str = Field(default="1/minute")
+    slowapi_default: str = Field(default="50/minute")
+    slowapi_ai: str = Field(default="10/minute")
 
     model_config = {"env_prefix": "RATE_LIMIT_", "env_file": ".env", "extra": "ignore"}
+
+
+# TO-DO: put some data in env file
+class CORSConfig(BaseSettings):
+    allow_origins: list[str] = Field(default=["http://localhost:3000", "http://127.0.0.1:3000"])
+    allow_credentials: bool = Field(default=True)
+    allow_methods: list[str] = Field(default=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    allow_headers: list[str] = Field(default=["*"])
+
+    model_config = {"env_prefix": "CORS_", "env_file": ".env", "extra": "ignore"}
 
 
 class AppConfig(BaseSettings):
@@ -40,6 +50,6 @@ class AppConfig(BaseSettings):
     logging: LoggingConfig = LoggingConfig()
     gemini: GeminiConfig = GeminiConfig()
     rate_limit: RateLimitConfig = RateLimitConfig()
-
+    cors: CORSConfig = CORSConfig()
 
 app_config = AppConfig()

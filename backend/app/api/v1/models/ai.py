@@ -21,6 +21,15 @@ class AIResponse(BaseModel):
     response: str
     history: list[dict]
 
+class AIOutfitRequest(BaseModel):
+    aiprovider: AIProvider
+    selectedItems: list[str];
+    additionalInstructions: str;
+
+class AIOutfitResponse(BaseModel):
+    response: str
+    history: list[dict]
+
 
 #     content=Content(
 #     parts=[

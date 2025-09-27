@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from .api.v1.router import router as router_v1
 import logging
@@ -17,6 +18,14 @@ def _rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=app_config.cors.allow_origins,
+    allow_credentials=app_config.cors.allow_credentials,
+    allow_methods=app_config.cors.allow_methods,
+    allow_headers=app_config.cors.allow_headers,
+)
 
 logger.info("Starting server")
 

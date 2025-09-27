@@ -1,64 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import AISidebar from './components/aisidebar';
-
-interface Item {
-  id: string;
-  name: string;
-  description?: string;
-  category?: string;
-}
+import { useItems } from './hooks/useItems';
 
 export default function Home() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch items from backend
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        setLoading(true);
-        // Replace with your actual backend endpoint
-        const response = await fetch('/api/items');
-        if (!response.ok) {
-          throw new Error('Failed to fetch items');
-        }
-        const data = await response.json();
-        setItems(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        // Fallback data for development TO_DO: remove after integrating backend calls
-        setItems([
-          { id: '1', name: 'Sample Item 1', description: 'This is a sample item', category: 'Electronics' },
-          { id: '2', name: 'Sample Item 2', description: 'Another sample item', category: 'Books' },
-          { id: '3', name: 'Sample Item 3', description: 'Yet another sample item', category: 'Clothing' },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchItems();
-  }, []);
-
-  const handleItemToggle = (itemId: string) => {
-    setSelectedItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedItems.length === items.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(items.map(item => item.id));
-    }
-  };
+  const { items, selectedItems, loading, error, handleItemToggle, handleSelectAll } = useItems();
 
   if (loading) {
     return (
@@ -79,7 +25,7 @@ export default function Home() {
         </div>
 
         {/* AI Sidebar - Only on home page */}
-        <AISidebar />
+        <AISidebar selectedItems={selectedItems} items={items} />
       </div>
     );
   }
@@ -154,7 +100,7 @@ export default function Home() {
       </div>
 
       {/* AI Sidebar - Only on home page */}
-      <AISidebar />
+      <AISidebar selectedItems={selectedItems} items={items} />
     </div>
   );
 }

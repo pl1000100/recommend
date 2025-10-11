@@ -27,5 +27,18 @@ export interface Item {
   category?: string;
 }
 
+export interface CreateItemRequest {
+  name: string;
+  description: string;
+  category: string;
+}
+
+export interface CreateItemResponse {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+}
+
 
   

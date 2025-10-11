@@ -3,7 +3,8 @@ from pydantic import BaseModel, field_validator
 
 class CreateItemRequest(BaseModel):
     name: str
-    type: str
+    description: str = ""
+    category: str
 
     @field_validator("name")
     def validate_name(cls, v):
@@ -15,4 +16,5 @@ class CreateItemRequest(BaseModel):
 class CreateItemResponse(BaseModel):
     id: int
     name: str
-    type: str
+    description: str
+    category: str

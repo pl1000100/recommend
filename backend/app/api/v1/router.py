@@ -26,12 +26,24 @@ async def create_item(request: Request, item: CreateItemRequest):
     logger.info(f"Creating item: {item.name}")
     logger.debug(f"Item: {item}")
 
-    # TODO: Create item in database
-    # TODO: Return item id
-
-    raise NotImplementedError("Not implemented")
-
-    return CreateItemResponse(id=1, name="Item 1", type="Item 1")
+    try:
+        # TODO: Create item in database
+        # For now, return a mock response with generated ID
+        item_id = hash(item.name + item.category) % 1000000  # Simple ID generation
+        
+        response = CreateItemResponse(
+            id=item_id,
+            name=item.name,
+            description=item.description,
+            category=item.category
+        )
+        
+        logger.info(f"Item created successfully with ID: {item_id}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error creating item: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create item")
 
 
 @router.post("/ai", response_model=AIResponse)

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ItemService } from '../services/itemService';
 import { Item } from '../services/types';
 
 export const useItems = () => {
@@ -12,13 +13,8 @@ export const useItems = () => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        // Replace with your actual backend endpoint
-        const response = await fetch('/api/items');
-        if (!response.ok) {
-          throw new Error('Failed to fetch items');
-        }
-        const data = await response.json();
-        setItems(data);
+        const items = await ItemService.getItems();
+        setItems(items);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         // Fallback data for development

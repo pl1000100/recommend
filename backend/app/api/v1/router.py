@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Request
 from app.api.v1.models import (
     CreateItemRequest,
     CreateItemResponse,
+    GetItemsResponse,
+    Item,
     AIRequest,
     AIResponse,
     AIOutfitRequest,
@@ -13,12 +15,24 @@ from app.config import app_config
 from app.ai.clients import GeminiClient
 from app.ai.enums import AIProvider
 from app.core import limiter
-
+import app.db.repositories as db_repo
+import app.db.models as db_models
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.get("/items", response_model=GetItemsResponse)
+@limiter.limit(app_config.rate_limit.slowapi_default)
+async def get_items(request: Request):
+    logger.info("Getting items")
+    logger.debug("Getting items")
+    items = db_repo.get_items()
+    logger.critical(f"Items: {items}")
+    response = []
+    for item in items:
+        response.append(Item(id=item.id, name=item.name, description=item.description, category=item.category, created_at=item.created_at, updated_at=item.updated_at))
+    return GetItemsResponse(items=response)
 
 @router.post("/items", response_model=CreateItemResponse)
 @limiter.limit(app_config.rate_limit.slowapi_default)
@@ -27,18 +41,22 @@ async def create_item(request: Request, item: CreateItemRequest):
     logger.debug(f"Item: {item}")
 
     try:
-        # TODO: Create item in database
-        # For now, return a mock response with generated ID
-        item_id = hash(item.name + item.category) % 1000000  # Simple ID generation
+        item = db_models.Item(name=item.name, description=item.description, category=item.category)
         
+        try:
+            db_repo.create_item(item)
+        except Exception as e:
+            logger.error(f"Error creating item: {e}")
+            raise HTTPException(status_code=500, detail="Failed to create item")
+
         response = CreateItemResponse(
-            id=item_id,
+            id=item.id,
             name=item.name,
             description=item.description,
             category=item.category
         )
         
-        logger.info(f"Item created successfully with ID: {item_id}")
+        logger.info(f"Item created successfully with ID: {item.id}")
         return response
         
     except Exception as e:

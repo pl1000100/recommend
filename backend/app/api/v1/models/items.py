@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-
+from datetime import datetime
 
 class CreateItemRequest(BaseModel):
     name: str
@@ -18,3 +18,14 @@ class CreateItemResponse(BaseModel):
     name: str
     description: str
     category: str
+
+class Item(BaseModel):
+    id: int
+    name: str
+    description: str
+    category: str
+    created_at: datetime
+    updated_at: datetime
+
+class GetItemsResponse(BaseModel):
+    items: list[Item]

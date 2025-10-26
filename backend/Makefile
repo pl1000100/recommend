@@ -12,4 +12,3 @@ dev:
 fix:
 	poetry run black app
 	poetry run flake8 app
-

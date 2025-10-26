@@ -42,6 +42,12 @@ class CORSConfig(BaseSettings):
     model_config = {"env_prefix": "CORS_", "env_file": ".env", "extra": "ignore"}
 
 
+class DatabaseConfig(BaseSettings):
+    database_url: str = Field(default="sqlite:///./data/database.db")
+
+    model_config = {"env_prefix": "DATABASE_", "env_file": ".env", "extra": "ignore"}
+
+
 class AppConfig(BaseSettings):
     environment: str = Field(default="development", env="ENVIRONMENT")
     host: str = Field(default="0.0.0.0", env="HOST")
@@ -51,5 +57,6 @@ class AppConfig(BaseSettings):
     gemini: GeminiConfig = GeminiConfig()
     rate_limit: RateLimitConfig = RateLimitConfig()
     cors: CORSConfig = CORSConfig()
+    database: DatabaseConfig = DatabaseConfig()
 
 app_config = AppConfig()

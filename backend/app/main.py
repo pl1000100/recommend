@@ -9,6 +9,8 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from app.core import limiter
 
+import app.db.base as db
+
 logging.basicConfig(level=app_config.logging.level)
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 def _rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded"})
 
+db.db_init()
 
 app = FastAPI()
 

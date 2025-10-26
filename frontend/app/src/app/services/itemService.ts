@@ -1,3 +1,4 @@
+import { get } from 'http';
 import { CreateItemRequest, CreateItemResponse, Item } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -21,12 +22,19 @@ export class ItemService {
   }
 
   static async getItems(): Promise<Item[]> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/items`);
-    
+    const response = await fetch(`${API_BASE_URL}/api/v1/items`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  
     if (!response.ok) {
-      throw new Error(`Failed to fetch items: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch items: ${response.statusText} - ${errorText}`);
     }
-
-    return response.json();
+  
+    const data = await response.json();
+    return data.items;
   }
 }
